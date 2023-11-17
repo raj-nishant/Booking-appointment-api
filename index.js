@@ -13,7 +13,8 @@ function handleEditClick(name, email) {
 }
 
 // Function to display data on the page
-function displayUserData(name, email) {
+function displayUserData(user) {
+  const { name, email, _id } = user; // Destructure the user object
   const userDiv = document.createElement("div");
   userDiv.innerHTML = `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p>`;
 
@@ -21,8 +22,7 @@ function displayUserData(name, email) {
   const deleteButton = document.createElement("button");
   deleteButton.textContent = "Delete";
   deleteButton.addEventListener("click", () => {
-    userDiv.remove(); // Remove from the webpage
-    // removeFromLocalStorage(name, email); // Remove from localStorage
+    deleteUser(_id, userDiv); // Pass the user ID to the deleteUser function
   });
 
   const editButton = document.createElement("button");
@@ -37,6 +37,20 @@ function displayUserData(name, email) {
   contentDiv.appendChild(userDiv);
 }
 
+// Function to delete a user
+function deleteUser(userId, userDiv) {
+  axios
+    .delete(
+      `https://crudcrud.com/api/8785b3b49c524e41b0b09d269f239802/book/${userId}`
+    )
+    .then(() => {
+      userDiv.remove(); // Remove from the webpage
+    })
+    .catch((error) => {
+      console.error("Error deleting user:", error);
+    });
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   axios
     .get("https://crudcrud.com/api/8785b3b49c524e41b0b09d269f239802/book")
@@ -44,27 +58,13 @@ window.addEventListener("DOMContentLoaded", () => {
       const userDataArray = res.data; // Assuming the data is an array of objects
 
       userDataArray.forEach((userData) => {
-        displayUserData(userData.name, userData.email);
+        displayUserData(userData);
       });
     })
     .catch((error) => {
       document.getElementById("content").innerText = error.message;
     });
 });
-
-function postRequest(name, email) {
-  axios
-    .post("https://crudcrud.com/api/8785b3b49c524e41b0b09d269f239802/book", {
-      name,
-      email,
-    })
-    .then((res) => {
-      displayUserData(res.data.name, res.data.email);
-    })
-    .catch((error) => {
-      document.getElementById("content").innerText(error);
-    });
-}
 
 // Event listener for form submission
 form.addEventListener("submit", function (e) {
@@ -73,7 +73,6 @@ form.addEventListener("submit", function (e) {
   const email = emailInput.value;
 
   if (name && email) {
-    // displayUserData(name, email);
     postRequest(name, email);
     nameInput.value = "";
     emailInput.value = "";
@@ -82,8 +81,17 @@ form.addEventListener("submit", function (e) {
   }
 });
 
-// Function to load data from localStorage on page load
-function loadUsersFromLocalStorage() {
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  users.forEach((user) => displayUserData(user.name, user.email));
+// Function to add data to CRUD API
+function postRequest(name, email) {
+  axios
+    .post("https://crudcrud.com/api/8785b3b49c524e41b0b09d269f239802/book", {
+      name,
+      email,
+    })
+    .then((res) => {
+      displayUserData(res.data);
+    })
+    .catch((error) => {
+      console.error("Error posting user data:", error);
+    });
 }
