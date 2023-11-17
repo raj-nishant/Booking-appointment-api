@@ -37,9 +37,24 @@ function displayUserData(name, email) {
   contentDiv.appendChild(userDiv);
 }
 
+window.addEventListener("DOMContentLoaded", () => {
+  axios
+    .get("https://crudcrud.com/api/8785b3b49c524e41b0b09d269f239802/book")
+    .then((res) => {
+      const userDataArray = res.data; // Assuming the data is an array of objects
+
+      userDataArray.forEach((userData) => {
+        displayUserData(userData.name, userData.email);
+      });
+    })
+    .catch((error) => {
+      document.getElementById("content").innerText = error.message;
+    });
+});
+
 function postRequest(name, email) {
   axios
-    .post("https://crudcrud.com/api/bad0fc3a73f04b7796a29fe589c1ca20/book", {
+    .post("https://crudcrud.com/api/8785b3b49c524e41b0b09d269f239802/book", {
       name,
       email,
     })
@@ -67,5 +82,8 @@ form.addEventListener("submit", function (e) {
   }
 });
 
-// Load data from localStorage when the page loads
-loadUsersFromLocalStorage();
+// Function to load data from localStorage on page load
+function loadUsersFromLocalStorage() {
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  users.forEach((user) => displayUserData(user.name, user.email));
+}
